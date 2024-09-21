@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "typos_web"
+version = "0.1.0"
+description = "A simple tool to fix typos w=using LLM and seeing the difference."
+authors = ["ddorn <diego.dorn@free.fr>"]
+license = "WTFPL"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+openai = "^1.41.1"
+anthropic = "^0.34.1"
+streamlit = "^1.37.1"
+tiktoken = "^0.6.0"
+
+[tool.poetry.scripts]
+# typo-web = 'src.bai:app'
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.4"
+pre-commit = "^3.7.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
