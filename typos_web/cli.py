@@ -10,9 +10,8 @@ def cli():
         "streamlit",
         "run",
         str(Path(__file__).parent / "main.py"),
+        sys.argv[1:]
     ]
-    print(f"Python executable: {python_executable}")
-    print(f"Running: {args}")
     os.execv(python_executable, args)
 
 if __name__ == "__main__":

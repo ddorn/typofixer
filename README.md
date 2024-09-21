@@ -10,10 +10,21 @@ It's simple.
 
 👉 Find an instance at https://typo-correct.fly.dev/.
 
+![Typo Fixer](./images/screenshot.webp)
+
 ## Run locally
 
-You need to have the `OPENAI_API_KEY` environment variable set to your OpenAI API key to
+The simplest way to run the app locally is using [`pipx`](https://pipxproject.github.io/pipx/).
+
+```bash
+pipx install https://github.com/ddorn/typofixer
+```
+Then the app can be started with `typofixer`.
+
+Note that you need to have the `OPENAI_API_KEY` environment variable set to your OpenAI API key to
 use OpenAI models, and `ANTHROPIC_API_KEY` to use the Anthropic models.
+
+## Modify and run locally
 
 ```bash
 # Install dependencies with poetry (https://python-poetry.org/)

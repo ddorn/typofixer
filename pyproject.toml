@@ -14,7 +14,7 @@ streamlit = "^1.37.1"
 tiktoken = "^0.6.0"
 
 [tool.poetry.scripts]
-# typo-web = 'src.bai:app'
+typofixer = 'typos_web.cli:cli'
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.4"
