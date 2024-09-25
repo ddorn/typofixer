@@ -9,27 +9,36 @@ from llm import ai_stream
 
 
 def main():
-    st.set_page_config(initial_sidebar_state="collapsed", page_title="LLM Typo Fixer")
+    st.set_page_config(initial_sidebar_state="expanded", page_title="LLM Typo Fixer")
 
     st.title("LLM Typo Fixer")
 
     all_hearts = "❤️-🧡-💛-💚-💙-💜-🖤-🤍-🤎-💖-❤️‍🔥".split("-")
     heart = random.choice(all_hearts)
 
-    st.write(
-    f"""
-    It's simple.
-    1. You input a text
-    2. An LLM rewrites it
-    3. You see the differences:
-        :red[red text is yours], :green[green is suggestions].
-    4. You click to toggle between the original and new version.
-    5. Copy-Paste once you're happy!
+    with st.sidebar:
+        st.write(
+        f"""
+        # How to use this tool?
+        It's simple.
+        1. You input a text
+        2. An LLM rewrites it
+        3. You see the differences:
+            :red[red text is yours], :green[green is suggestions].
+        4. You click to toggle between the original and new version.
+        5. Copy-Paste once you're happy!
 
-    Made with {heart} by [Diego Dorn](https://ddorn.fr). If you find it useful, [please contribute](https://paypal.me/diegodorn), each request costs me ~1 cent.
+        Made with {heart} by [Diego Dorn](https://ddorn.fr). If you find it useful, [please contribute](https://paypal.me/diegodorn), each request costs me ~1 cent.
 
-    ---
-    """)
+        ## Privacy
+        Your data is sent to my server, where it is not stored and is only sent to
+        OpenAI/Anthropic depending on your choice of model. I only log the size of the requests to monitor usage.
+        You can also run this locally by following the instructions on the [GitHub repo](
+        https://github.com/ddorn/typofixer). OpenAI and Anthropic may do many things with your data,
+        including training on anonymized versions of it and storing it for 30 days.
+
+        ---
+        """)
 
     system_prompts = {
         "Fix typos": """
