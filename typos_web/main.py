@@ -6,7 +6,7 @@ import streamlit as st
 import constants
 from formatting import split_words, fmt_diff_toggles
 from llm import ai_stream
-import directus
+import usage
 
 
 def main():
@@ -84,10 +84,10 @@ def main():
 
 
     if lets_gooo:
-        usage = []
+        tokens = []  # A hack to get the value out of the function while still streaming easily.
         corrected = st.write_stream(ai_stream(system, [dict(role="user", content=text)], model=model,
-                                              usage_callback=lambda inputs, outputs: usage.extend([inputs, outputs])))
-        directus.log_call(model, text, corrected, usage[0], usage[1])
+                                              usage_callback=lambda inputs, outputs: tokens.extend([inputs, outputs])))
+        usage.log_call(model, text, corrected, tokens[0], tokens[1])
         cache()[text, system] = corrected
         st.rerun()
     else:

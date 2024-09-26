@@ -55,7 +55,6 @@ def ai_stream(
             if not chunk.choices:
                 # This is the last chunk, with the usage
                 usage_callback(chunk.usage.prompt_tokens, chunk.usage.completion_tokens)
-                print("Usage", chunk.usage)
             else:
                 text = chunk.choices[0].delta.content
                 if text is not None:

@@ -1,6 +1,9 @@
 # %%
+import datetime
 import json
 import os
+from pathlib import Path
+import time
 import requests
 import warnings
 
@@ -10,17 +13,23 @@ DIRECTUS_COLLECTION = os.getenv("DIRECTUS_COLLECTION", "typofixer_requests")
 DIRECTUS_TOKEN = os.getenv("DIRECTUS_TOKEN")
 DIRECTUS_DISABLE = os.getenv("DIRECTUS_DISABLE")
 
+LOG_FILE = Path(__file__).parent.parent / "logs.jsonl"
 
-def log_call(model: str, input_text: str, output_text: str, input_tokens: int, output_tokens: int):
-    if DIRECTUS_DISABLE:
-        return
-    if not DIRECTUS_TOKEN:
-        warnings.warn("No DIRECTUS_TOKEN set, not logging usage.")
-        return
-    if not DIRECTUS_DOMAIN:
-        warnings.warn("No DIRECTUS_URL set, not logging usage.")
-        return
 
+def log_to_file(model: str, input_text: str, output_text: str, input_tokens: int, output_tokens: int):
+    data = {
+        "model": model,
+        "input_length": len(input_text),
+        "output_length": len(output_text),
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "date_created": time.time(),
+    }
+
+    with open(LOG_FILE, "a") as f:
+        f.write(json.dumps(data) + "\n")
+
+def log_to_directus(model: str, input_text: str, output_text: str, input_tokens: int, output_tokens: int):
     url = f"{DIRECTUS_DOMAIN}/items/{DIRECTUS_COLLECTION}"
 
     response = requests.post(
@@ -35,6 +44,21 @@ def log_call(model: str, input_text: str, output_text: str, input_tokens: int, o
         headers={"Authorization": f"Bearer {DIRECTUS_TOKEN}"},
     )
     response.raise_for_status()
+
+
+
+def log_call(model: str, input_text: str, output_text: str, input_tokens: int, output_tokens: int):
+    if DIRECTUS_DISABLE:
+        pass
+    elif not DIRECTUS_TOKEN:
+        warnings.warn("No DIRECTUS_TOKEN set, not logging usage.")
+    elif not DIRECTUS_DOMAIN:
+        warnings.warn("No DIRECTUS_URL set, not logging usage.")
+    else:
+        log_to_directus(model, input_text, output_text, input_tokens, output_tokens)
+        return
+    log_to_file(model, input_text, output_text, input_tokens, output_tokens)
+
 
 def export_schema():
     assert DIRECTUS_DOMAIN
