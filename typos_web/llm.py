@@ -1,5 +1,5 @@
 import os
-from typing import Generator
+from typing import Callable, Generator
 
 import anthropic
 import openai
@@ -12,6 +12,7 @@ def ai_stream(
     system: str,
     messages: list[dict[str, str]],
     model: str,
+    usage_callback: Callable[[int, int], None] = lambda x, y: None,
     **kwargs,
 ) -> Generator[str, None, None]:
     """Stream with the AI using the given messages."""
@@ -35,6 +36,9 @@ def ai_stream(
         ) as stream:
             for text in stream.text_stream:
                 yield text
+
+            usage = stream.get_final_message().usage
+            usage_callback(usage.input_tokens, usage.output_tokens)
     else:
         response = openai.chat.completions.create(
             model=model,
@@ -43,11 +47,16 @@ def ai_stream(
                 *messages,
             ],  # type: ignore
             stream=True,
+            stream_options=dict(include_usage=True),
             **kwargs,
         )
 
         for chunk in response:
-            text = chunk.choices[0].delta.content
-            if text is None:
-                break
-            yield text
+            if not chunk.choices:
+                # This is the last chunk, with the usage
+                usage_callback(chunk.usage.prompt_tokens, chunk.usage.completion_tokens)
+                print("Usage", chunk.usage)
+            else:
+                text = chunk.choices[0].delta.content
+                if text is not None:
+                    yield text
