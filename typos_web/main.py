@@ -1,6 +1,7 @@
 import difflib
 import random
 from textwrap import dedent
+import time
 import streamlit as st
 
 import constants
@@ -9,10 +10,27 @@ from llm import ai_stream
 import usage
 
 
+def show_metrics(tracker):
+    cols = st.columns(2)
+
+    with cols[0]:
+        cost = tracker.total_cost(0)
+        cost_this_month = tracker.total_cost(time.time() - 30 * 24 * 3600)
+        st.metric("Total API cost", f"{cost:.02f}$", f"Last 30 days: {cost_this_month:.02f}$")
+
+    with cols[1]:
+        # Display the number of requests
+        requests = tracker.requests_count(0)
+        requests_this_month = tracker.requests_count(time.time() - 30 * 24 * 3600)
+        st.metric("Total requests", f"{requests}", f"Last 30 days: {requests_this_month}")
+
+
 def main():
     st.set_page_config(initial_sidebar_state="expanded", page_title="LLM Typo Fixer")
 
     st.title("LLM Typo Fixer")
+
+    tracker = usage.tracker()
 
     all_hearts = "❤️-🧡-💛-💚-💙-💜-🖤-🤍-🤎-💖-❤️‍🔥".split("-")
     heart = random.choice(all_hearts)
@@ -30,15 +48,19 @@ def main():
         5. Copy-Paste once you're happy!
 
         Made with {heart} by [Diego Dorn](https://ddorn.fr). If you find it useful, [please contribute](https://paypal.me/diegodorn), each request costs me ~1 cent.
+        """
+        )
 
+        show_metrics(tracker)
+
+        st.write(
+            """
         ## Privacy
         Your data is sent to my server, where it is not stored and is only sent to
         OpenAI/Anthropic depending on your choice of model. I only log the size of the requests to monitor usage.
         You can also run this locally by following the instructions on the [GitHub repo](
         https://github.com/ddorn/typofixer). OpenAI and Anthropic may do many things with your data,
         including training on anonymized versions of it and storing it for 30 days.
-
-        ---
         """
         )
 
@@ -98,7 +120,7 @@ def main():
                 usage_callback=lambda inputs, outputs: tokens.extend([inputs, outputs]),
             )
         )
-        usage.log_call(model, text, corrected, tokens[0], tokens[1])
+        tracker.log_call(model, text, corrected, tokens[0], tokens[1])
         cache()[text, system] = corrected
         st.rerun()
     else:
