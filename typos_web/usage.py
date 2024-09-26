@@ -195,10 +195,10 @@ def tracker():
     if DIRECTUS_DISABLE:
         return FileUsageTracker(TYPOFIXER_LOG_FILE)
     elif not DIRECTUS_TOKEN:
-        warnings.warn("No DIRECTUS_TOKEN set, not logging usage.")
+        warnings.warn("No DIRECTUS_TOKEN set, logging to file.")
         return FileUsageTracker(TYPOFIXER_LOG_FILE)
     elif not DIRECTUS_DOMAIN:
-        warnings.warn("No DIRECTUS_URL set, not logging usage.")
+        warnings.warn("No DIRECTUS_URL set, logging to file.")
         return FileUsageTracker(TYPOFIXER_LOG_FILE)
     else:
         return DirectusUsageTracker(

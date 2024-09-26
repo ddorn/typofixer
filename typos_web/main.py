@@ -14,14 +14,20 @@ import usage
 MAX_30_DAY_COST = float(os.getenv("MAX_30_DAY_COST", -1))
 
 
-def show_metrics(tracker) -> float:
-    """Show usage metrics and return the cost for the last 30 days."""
-    cols = st.columns(2)
+def show_metrics(tracker) -> bool:
+    """Show usage metrics and return whether new requests are allowed"""
+
+    with st.sidebar:
+        cols = st.columns(2)
 
     with cols[0]:
         cost = tracker.total_cost(0)
-        cost_this_month = tracker.total_cost(time.time() - 30 * 24 * 3600)
-        st.metric("Total API cost", f"{cost:.02f}$", f"Last 30 days: {cost_this_month:.02f}$")
+        cost_last_30d = tracker.total_cost(time.time() - 30 * 24 * 3600)
+        if MAX_30_DAY_COST >= 0:
+            cap = f"/{MAX_30_DAY_COST:.02f}$"
+        else:
+            cap = ""
+        st.metric("Total API cost", f"{cost:.02f}$", f"30 days: {cost_last_30d:.02f}${cap}")
 
     with cols[1]:
         # Display the number of requests
@@ -29,7 +35,13 @@ def show_metrics(tracker) -> float:
         requests_this_month = tracker.requests_count(time.time() - 30 * 24 * 3600)
         st.metric("Total requests", f"{requests}", f"Last 30 days: {requests_this_month}")
 
-    return cost_this_month
+    if MAX_30_DAY_COST >= 0 and (cost_last_30d >= MAX_30_DAY_COST):
+        st.warning(
+            "Free credits for global use have expired. You can [set up a local instance](https://github.com/ddorn/typofixer) with your own API keys."
+            " Or email typofixer@therandom.space and [make a donation](https://paypal.me/diegodorn), though I don't garanty to be fast. Sorry :s"
+        )
+        return False
+    return True
 
 
 def main():
@@ -42,9 +54,8 @@ def main():
     all_hearts = "❤️-🧡-💛-💚-💙-💜-🖤-🤍-🤎-💖-❤️‍🔥".split("-")
     heart = random.choice(all_hearts)
 
-    with st.sidebar:
-        st.write(
-            f"""
+    st.sidebar.write(
+        f"""
         # How to use this tool?
         It's simple.
         1. You input a text
@@ -56,12 +67,12 @@ def main():
 
         Made with {heart} by [Diego Dorn](https://ddorn.fr).
         """
-        )
+    )
 
-        last_30_days_cost = show_metrics(tracker)
+    can_run = show_metrics(tracker)
 
-        st.write(
-            """
+    st.sidebar.write(
+        """
         ## Privacy
         Your data is sent to my server, where it is not stored and is only sent to
         OpenAI/Anthropic depending on your choice of model. I only log the size of the requests to monitor usage.
@@ -69,16 +80,7 @@ def main():
         https://github.com/ddorn/typofixer). OpenAI and Anthropic may do many things with your data,
         including training on anonymized versions of it and storing it for 30 days.
         """
-        )
-
-    if MAX_30_DAY_COST >= 0 and (last_30_days_cost >= MAX_30_DAY_COST):
-        st.warning(
-            "Free credits for global use have expired. You can [set up a local instance](https://github.com/ddorn/typofixer) with your own API keys."
-            " Or email typofixer@therandom.space and [make a donation](https://paypal.me/diegodorn), though I don't garanty to be fast. Sorry :s"
-        )
-        can_run = False
-    else:
-        can_run = True
+    )
 
     system_prompts = {
         "Fix typos": """
