@@ -49,4 +49,6 @@ The shema for the directus database is defined in [directus_schema.json](./typos
 - `DIRECTUS_COLLECTION`: The collection name for logging (default is `typofixer_requests`).
 - `DIRECTUS_DISABLE`: Optianal, set to disable logging.
 
-<!-- If you find it useful, [please contribute](https://paypal.me/diegodorn), each request costs me ~1 cent. -->
+### Max usage
+
+You can set the `MAX_30_DAY_COST` environment variable to limit the usage of the app. The cost is a float number of dollars. The app will stop serving requests once the cost of the requests in the last 30 days exceeds this value. If set to a negative number, the app will not limit the usage.

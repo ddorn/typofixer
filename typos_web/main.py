@@ -1,4 +1,5 @@
 import difflib
+import os
 import random
 from textwrap import dedent
 import time
@@ -10,7 +11,11 @@ from llm import ai_stream
 import usage
 
 
-def show_metrics(tracker):
+MAX_30_DAY_COST = float(os.getenv("MAX_30_DAY_COST", -1))
+
+
+def show_metrics(tracker) -> float:
+    """Show usage metrics and return the cost for the last 30 days."""
     cols = st.columns(2)
 
     with cols[0]:
@@ -23,6 +28,8 @@ def show_metrics(tracker):
         requests = tracker.requests_count(0)
         requests_this_month = tracker.requests_count(time.time() - 30 * 24 * 3600)
         st.metric("Total requests", f"{requests}", f"Last 30 days: {requests_this_month}")
+
+    return cost_this_month
 
 
 def main():
@@ -47,11 +54,11 @@ def main():
         4. You click to toggle between the original and new version.
         5. Copy-Paste once you're happy!
 
-        Made with {heart} by [Diego Dorn](https://ddorn.fr). If you find it useful, [please contribute](https://paypal.me/diegodorn), each request costs me ~1 cent.
+        Made with {heart} by [Diego Dorn](https://ddorn.fr).
         """
         )
 
-        show_metrics(tracker)
+        last_30_days_cost = show_metrics(tracker)
 
         st.write(
             """
@@ -63,6 +70,15 @@ def main():
         including training on anonymized versions of it and storing it for 30 days.
         """
         )
+
+    if MAX_30_DAY_COST >= 0 and (last_30_days_cost >= MAX_30_DAY_COST):
+        st.warning(
+            "Free credits for global use have expired. You can [set up a local instance](https://github.com/ddorn/typofixer) with your own API keys."
+            " Or email typofixer@therandom.space and [make a donation](https://paypal.me/diegodorn), though I don't garanty to be fast. Sorry :s"
+        )
+        can_run = False
+    else:
+        can_run = True
 
     system_prompts = {
         "Fix typos": """
@@ -111,6 +127,9 @@ def main():
         return {}
 
     if lets_gooo:
+        if not can_run:
+            st.warning("Sorry, there's no more credits!")
+            st.stop()
         tokens = []  # A hack to get the value out of the function while still streaming easily.
         corrected = st.write_stream(
             ai_stream(
