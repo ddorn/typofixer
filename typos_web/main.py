@@ -11,7 +11,7 @@ from llm import ai_stream
 import usage
 
 
-MAX_30_DAY_COST = float(os.getenv("MAX_30_DAY_COST", -1))
+MAX_30_DAY_COST = float(os.getenv("MAX_30_DAY_COST", 1))
 
 
 def show_metrics(tracker) -> bool:
@@ -23,11 +23,7 @@ def show_metrics(tracker) -> bool:
     with cols[0]:
         cost = tracker.total_cost(0)
         cost_last_30d = tracker.total_cost(time.time() - 30 * 24 * 3600)
-        if MAX_30_DAY_COST >= 0:
-            cap = f"/{MAX_30_DAY_COST:.02f}$"
-        else:
-            cap = ""
-        st.metric("Total API cost", f"{cost:.02f}$", f"30 days: {cost_last_30d:.02f}${cap}")
+        st.metric("Total API cost", f"{cost:.02f}$", f"Last 30 days: {cost_last_30d:.02f}$")
 
     with cols[1]:
         # Display the number of requests
