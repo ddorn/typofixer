@@ -19,7 +19,7 @@ def main():
 
     with st.sidebar:
         st.write(
-        f"""
+            f"""
         # How to use this tool?
         It's simple.
         1. You input a text
@@ -39,7 +39,8 @@ def main():
         including training on anonymized versions of it and storing it for 30 days.
 
         ---
-        """)
+        """
+        )
 
     system_prompts = {
         "Fix typos": """
@@ -56,14 +57,20 @@ def main():
         "Custom": "",
     }
 
-    system_name = st.radio("Preset instructions for the LLM", list(system_prompts.keys()), horizontal=True)
+    system_name = st.radio(
+        "Preset instructions for the LLM", list(system_prompts.keys()), horizontal=True
+    )
     assert system_name is not None  # For type checker
 
     with st.form(key="fix"):
 
         # Allow for custom prompts also
         if system_name == "Custom":
-            system = st.text_area("Custom prompt", value=dedent(system_prompts["Fix typos"]).strip(), max_chars=constants.MAX_CHARS)
+            system = st.text_area(
+                "Custom prompt",
+                value=dedent(system_prompts["Fix typos"]).strip(),
+                max_chars=constants.MAX_CHARS,
+            )
         else:
             system = dedent(system_prompts[system_name]).strip()
             st.code(system, language="text")
@@ -77,29 +84,31 @@ def main():
 
         lets_gooo = st.form_submit_button("Fix", type="primary")
 
-
     @st.cache_resource()
     def cache():
         return {}
 
-
     if lets_gooo:
         tokens = []  # A hack to get the value out of the function while still streaming easily.
-        corrected = st.write_stream(ai_stream(system, [dict(role="user", content=text)], model=model,
-                                              usage_callback=lambda inputs, outputs: tokens.extend([inputs, outputs])))
+        corrected = st.write_stream(
+            ai_stream(
+                system,
+                [dict(role="user", content=text)],
+                model=model,
+                usage_callback=lambda inputs, outputs: tokens.extend([inputs, outputs]),
+            )
+        )
         usage.log_call(model, text, corrected, tokens[0], tokens[1])
         cache()[text, system] = corrected
         st.rerun()
     else:
         corrected = cache().get((text, system))
 
-
     dev_mode = st.sidebar.toggle("Developer mode")
     if dev_mode:
         text = st.text_area("Text to fix", text, height=400)
         corrected = st.text_area("Corrected text", corrected, height=400)
         st.write(corrected)
-
 
     if corrected is not None:
         # Compute the difference between the two texts
@@ -115,14 +124,15 @@ def main():
         with st.container(border=True):
             st.html(fmt_diff_toggles(diff, start_with_old_selected=selected == options[0]))
 
-        st.warning("This text was written by a generative AI model. You **ALWAYS** need to review it.")
+        st.warning(
+            "This text was written by a generative AI model. You **ALWAYS** need to review it."
+        )
 
         st.expander("LLM version of the text").text(corrected)
-
 
     if dev_mode:
         st.expander("Raw diff").write(diff)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

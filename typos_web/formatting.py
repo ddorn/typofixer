@@ -4,7 +4,6 @@ from textwrap import dedent
 from typing import Iterator
 
 
-
 def fmt(
     text: str,
     fg: int | tuple[int, int, int] | None = None,
