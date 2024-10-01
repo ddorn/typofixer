@@ -168,6 +168,8 @@ def main():
         )
 
         st.expander("LLM version of the text").text(corrected)
+    else:
+        diff = "No diff yet"
 
     if dev_mode:
         st.expander("Raw diff").write(diff)
