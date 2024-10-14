@@ -23,7 +23,7 @@ def show_metrics(tracker) -> bool:
     with cols[0]:
         cost = tracker.total_cost(0)
         cost_last_30d = tracker.total_cost(time.time() - 30 * 24 * 3600)
-        st.metric("Total API cost", f"{cost:.02f}$", f"Last 30 days: {cost_last_30d:.02f}$")
+        st.metric("Total API cost", f"{cost:.04f}$", f"Last 30 days: {cost_last_30d:.02f}$")
 
     with cols[1]:
         # Display the number of requests
