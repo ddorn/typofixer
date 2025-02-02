@@ -69,6 +69,7 @@ class UsageTracker(ABC):
 
 
 class FileUsageTracker(UsageTracker):
+
     def __init__(self, log_file: str):
         self.log_file = log_file
 
@@ -88,6 +89,9 @@ class FileUsageTracker(UsageTracker):
             f.write(json.dumps(data) + "\n")
 
     def get_data_since(self, since: int) -> Iterator[dict]:
+        if not os.path.exists(self.log_file):
+            return
+
         with open(self.log_file) as f:
             for line in f:
                 data = json.loads(line)
