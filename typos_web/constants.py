@@ -1,4 +1,7 @@
-MAX_CHARS = 3000
+import os
+
+MAX_CHARS = 6000
+MAX_30_DAY_COST = float(os.getenv("MAX_30_DAY_COST", 1))
 
 OPENAI_MODEL = "gpt-4o-2024-08-06"
 ANTHROPIC_MODEL = "claude-3-opus-20240229"

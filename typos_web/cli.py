@@ -11,7 +11,7 @@ def cli():
         "streamlit",
         "run",
         str(Path(__file__).parent / "main.py"),
-        sys.argv[1:],
+        *sys.argv[1:],
     ]
     os.execv(python_executable, args)
 

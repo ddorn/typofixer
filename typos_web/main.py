@@ -1,5 +1,4 @@
 import difflib
-import os
 import random
 from textwrap import dedent
 import time
@@ -9,9 +8,6 @@ import constants
 from formatting import split_words, fmt_diff_toggles
 from llm import ai_stream
 import usage
-
-
-MAX_30_DAY_COST = float(os.getenv("MAX_30_DAY_COST", 1))
 
 
 def show_metrics(tracker) -> bool:
@@ -31,7 +27,7 @@ def show_metrics(tracker) -> bool:
         requests_this_month = tracker.requests_count(time.time() - 30 * 24 * 3600)
         st.metric("Total requests", f"{requests}", f"Last 30 days: {requests_this_month}")
 
-    if MAX_30_DAY_COST >= 0 and (cost_last_30d >= MAX_30_DAY_COST):
+    if constants.MAX_30_DAY_COST >= 0 and (cost_last_30d >= constants.MAX_30_DAY_COST):
         st.warning(
             "Free credits for global use have expired. You can [set up a local instance](https://github.com/ddorn/typofixer) with your own API keys."
             " Or email typofixer@therandom.space and [make a donation](https://paypal.me/diegodorn), though I don't garanty to be fast. Sorry :s"
