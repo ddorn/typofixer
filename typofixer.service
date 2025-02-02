@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 WorkingDirectory=/srv/typofixer
-ExecStart=poetry run streamlit run typos_web/main.py
+ExecStart=make run
 
 [Install]
 WantedBy=multi-user.target

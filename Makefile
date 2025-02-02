@@ -3,4 +3,4 @@ run:
 
 
 deploy:
-	git ls-files | rsync -av --files-from=- . pine:/srv/typofixer
+	ssh pine 'cd /srv/typofixer && git pull && systemctl restart typofixer'
