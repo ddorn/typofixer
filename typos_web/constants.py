@@ -1,4 +1,7 @@
 import os
+import dotenv
+
+dotenv.load_dotenv()
 
 MAX_CHARS = 6000
 MAX_30_DAY_COST = float(os.getenv("MAX_30_DAY_COST", 1))

@@ -4,7 +4,7 @@ from textwrap import dedent
 import time
 import streamlit as st
 
-import constants
+import constants  # Needs to be imported first, as it loads the environment variables.
 from formatting import split_words, fmt_diff_toggles
 from llm import ai_stream
 import usage
