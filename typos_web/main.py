@@ -3,6 +3,7 @@ import random
 from textwrap import dedent
 import time
 import streamlit as st
+import streamlit.components.v1 as components
 
 import constants  # Needs to be imported first, as it loads the environment variables.
 from formatting import split_words, fmt_diff_toggles
@@ -34,6 +35,13 @@ def show_metrics(tracker) -> bool:
         )
         return False
     return True
+
+
+def setup_analytics():
+    components.html(
+        """<script defer src="https://umami.therandom.space/script.js" data-website-id="66045f1a-46b5-41a1-9d29-daa734b222a8"></script>""",
+        height=0,
+    )
 
 
 def main():
@@ -73,6 +81,9 @@ def main():
         including training on anonymized versions of it and storing it for 30 days.
         """
     )
+
+    with st.sidebar:
+        setup_analytics()
 
     system_prompts = {
         "Fix typos": """
