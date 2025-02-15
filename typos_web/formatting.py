@@ -1,3 +1,4 @@
+import difflib
 from html import escape
 import re
 from textwrap import dedent
@@ -89,7 +90,16 @@ def split_words(text: str) -> list[str]:
     return parts
 
 
-def fmt_diff_toggles(diff: list[str], start_with_old_selected: bool = False) -> str:
+def mk_diff(original: str, corrected: str) -> list[str]:
+    """Compute the diff between the words in each text, using difflib."""
+    words1 = split_words(original)
+    words2 = split_words(corrected)
+
+    diff = list(difflib.ndiff(words1, words2))
+    return diff
+
+
+def pair_up_diff(diff) -> list[str | tuple[str, str]]:
 
     # Diff always outputs "- old" then "+ new" word, but both can be empty
     parts: list[str | tuple[str, str]] = []
@@ -123,18 +133,30 @@ def fmt_diff_toggles(diff: list[str], start_with_old_selected: bool = False) -> 
     for part in parts:
         if isinstance(part, tuple):
             old, new = part
+
             prefix = common_prefix(old, new)
-            suffix = common_suffix(old, new)
-            old = old[len(prefix) : -len(suffix) if suffix else None]
-            new = new[len(prefix) : -len(suffix) if suffix else None]
+            # Important, otherwise the suffix and prefix might overlap.
             if prefix:
+                old = old[len(prefix) :]
+                new = new[len(prefix) :]
                 new_parts.append(prefix)
+
+            suffix = common_suffix(old, new)
+            if suffix:
+                old = old[: -len(suffix)]
+                new = new[: -len(suffix)]
+
             new_parts.append((old, new))
             if suffix:
                 new_parts.append(suffix)
         else:
             new_parts.append(part)
-    parts = new_parts
+
+    return new_parts
+
+
+def fmt_diff_toggles(diff: list[str], start_with_old_selected: bool = False) -> str:
+    parts = pair_up_diff(diff)
 
     style = (
         dedent(

@@ -1,4 +1,3 @@
-import difflib
 import random
 from textwrap import dedent
 import time
@@ -6,7 +5,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 import constants  # Needs to be imported first, as it loads the environment variables.
-from formatting import split_words, fmt_diff_toggles
+from formatting import mk_diff, fmt_diff_toggles
 from llm import ai_stream
 import usage
 
@@ -39,7 +38,12 @@ def show_metrics(tracker) -> bool:
 
 def setup_analytics():
     components.html(
-        """<script defer src="https://umami.therandom.space/script.js" data-website-id="66045f1a-46b5-41a1-9d29-daa734b222a8"></script>""",
+        """
+        <script>
+            window.location.hostname = "typos.therandom.space";
+        </script>
+        <script defer src="https://umami.therandom.space/script.js" data-website-id="66045f1a-46b5-41a1-9d29-daa734b222a8"></script>
+        """,
         height=0,
     )
 
@@ -158,10 +162,7 @@ def main():
 
     if corrected is not None:
         # Compute the difference between the two texts
-        words1 = split_words(text)
-        words2 = split_words(corrected)
-
-        diff = list(difflib.ndiff(words1, words2))
+        diff = mk_diff(text, corrected)
 
         st.header("Corrected text")
         options = [":red[Original text]", ":green[New suggestions]"]
