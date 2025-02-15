@@ -41,6 +41,7 @@ def setup_analytics():
         """
         <script src="https://umami.therandom.space/script.js" data-website-id="66045f1a-46b5-41a1-9d29-daa734b222a8"></script>
         """,
+        height=0,
     )
 
 
