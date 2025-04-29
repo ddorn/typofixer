@@ -4,6 +4,7 @@ UV := $(shell command -v uv >/dev/null 2>&1 && echo "uv" || echo "/root/.local/b
 run:
 	$(UV) run streamlit run --server.port 9113 typos_web/main.py
 
-
 deploy:
-	ssh pine 'cd /srv/typofixer && git pull && systemctl restart typofixer'
+	git ls-files | rsync -avzP --files-from=- . pine:/srv/typofixer
+	rsync -avzP typofixer.service pine:/etc/systemd/system/
+	ssh pine "systemctl daemon-reload && systemctl restart typofixer"
