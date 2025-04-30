@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
-typofixer = "typos_web.cli:cli"
+typofixer = "typofixer.cli:cli"
 
 [dependency-groups]
 dev = [
@@ -24,7 +24,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["typos_web"]
+packages = ["typofixer"]
 
 [build-system]
 requires = ["hatchling"]

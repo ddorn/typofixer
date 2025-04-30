@@ -21,34 +21,18 @@ uvx git+https://github.com/ddorn/typofixer
 ```
 
 Note that you need to have the `OPENAI_API_KEY` environment variable set to your OpenAI API key to
-use OpenAI models, and `ANTHROPIC_API_KEY` to use the Anthropic models.
+use OpenAI models, or to create a `config.yaml` file in the `typos_web` directory with the following to use any OpenAI compatible API:
+
+```yaml
+# config.yaml
+api_base: ...
+api_key: ...
+```
+
+I recomand [LiteLLM Proxy](https://docs.litellm.ai/docs/proxy/docker_quick_start) with a free supabase backend.
 
 ## Modify and run locally (or to set up your own instance)
 
 ```bash
-# Install dependencies with poetry (https://python-poetry.org/)
-poetry install
-# Run the app
-poetry run streamlit run typo_fixer/main.py
+uv run streamlit run typofixer/main.py
 ```
-
-### Tracking usage
-
-There are two ways to track usage: with a log file or with a Directus database.
-
-#### Logging to a file
-The log file is set up by default to track usage, but is disabled if Directus is enabled. The path is controled by the `TYPOFIXER_LOG_FILE` environment variable.
-
-#### Directus Logging and Schema Export
-
-I'm tracking usage of the app with a [Directus](https://directus.io/) self-hosted database. It might not be the best decision, but I wanted to try it.
-
-The shema for the directus database is defined in [directus_schema.json](./typos_web/directus_schema.json). Connecting to the database is with 4 environment variables:
-- `DIRECTUS_DOMAIN`: Your Directus instance domain (e.g. `https://directus.example.com`), without trailing slash.
-- `DIRECTUS_TOKEN`: Your Directus API token with read and write permissions for the collection.
-- `DIRECTUS_COLLECTION`: The collection name for logging (default is `typofixer_requests`).
-- `DIRECTUS_DISABLE`: Optianal, set to disable logging.
-
-### Limiting cost per month
-
-You can set the `MAX_30_DAY_COST` environment variable to limit the usage of the app. The cost is a float number of dollars. The app will stop serving requests once the cost of the requests in the last 30 days exceeds this value. If set to a negative number, the app will not limit the usage.
