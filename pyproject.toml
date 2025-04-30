@@ -1,5 +1,5 @@
 [project]
-name = "typos_web"
+name = "typofixer"
 version = "0.1.0"
 description = "A simple tool to fix typos w=using LLM and seeing the difference."
 authors = [{ name = "ddorn", email = "diego.dorn@free.fr" }]

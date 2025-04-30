@@ -14,12 +14,11 @@ It's simple.
 
 ## Run locally
 
-The simplest way to run the app locally is using [`pipx`](https://pipxproject.github.io/pipx/).
+The simplest way to run the app locally is using [`uvx`](https://docs.astral.sh/uv/#scripts)
 
 ```bash
-pipx install https://github.com/ddorn/typofixer
+uvx git+https://github.com/ddorn/typofixer
 ```
-Then the app can be started with `typofixer`.
 
 Note that you need to have the `OPENAI_API_KEY` environment variable set to your OpenAI API key to
 use OpenAI models, and `ANTHROPIC_API_KEY` to use the Anthropic models.

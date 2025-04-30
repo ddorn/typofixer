@@ -6,5 +6,6 @@ run:
 
 deploy:
 	git ls-files | rsync -avzP --files-from=- . pine:/srv/typofixer
+	rsync -avzP config-prod.yaml pine:/srv/typofixer/config.yaml
 	rsync -avzP typofixer.service pine:/etc/systemd/system/
-	ssh pine "systemctl daemon-reload && systemctl restart typofixer"
+	ssh pine "systemctl daemon-reload && systemctl restart typofixer && journalctl -u typofixer -f"
