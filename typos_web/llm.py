@@ -13,6 +13,7 @@ def ai_stream(
     messages: list[dict[str, str]],
     model: str,
     usage_callback: Callable[[int, int], None] = lambda x, y: None,
+    client=None,
     **kwargs,
 ) -> Generator[str, None, None]:
     """Stream with the AI using the given messages."""
@@ -28,7 +29,7 @@ def ai_stream(
         if messages[-1]["role"] == "assistant":
             yield messages[-1]["content"]
 
-        with anthropic_client.messages.stream(
+        with (client or anthropic_client).messages.stream(
             model=model,
             messages=messages,
             system=system,
@@ -40,7 +41,7 @@ def ai_stream(
             usage = stream.get_final_message().usage
             usage_callback(usage.input_tokens, usage.output_tokens)
     else:
-        response = openai.chat.completions.create(
+        response = (client or openai).chat.completions.create(
             model=model,
             messages=[
                 dict(role="system", content=system),

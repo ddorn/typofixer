@@ -1,39 +1,15 @@
+from pathlib import Path
 import random
 from textwrap import dedent
-import time
+import openai
+from pydantic import BaseModel
 import streamlit as st
 import streamlit.components.v1 as components
+import yaml
 
 import constants  # Needs to be imported first, as it loads the environment variables.
 from formatting import mk_diff, fmt_diff_toggles
 from llm import ai_stream
-import usage
-
-
-def show_metrics(tracker) -> bool:
-    """Show usage metrics and return whether new requests are allowed"""
-
-    with st.sidebar:
-        cols = st.columns(2)
-
-    with cols[0]:
-        cost = tracker.total_cost(0)
-        cost_last_30d = tracker.total_cost(time.time() - 30 * 24 * 3600)
-        st.metric("Total API cost", f"{cost:.04f}$", f"Last 30 days: {cost_last_30d:.02f}$")
-
-    with cols[1]:
-        # Display the number of requests
-        requests = tracker.requests_count(0)
-        requests_this_month = tracker.requests_count(time.time() - 30 * 24 * 3600)
-        st.metric("Total requests", f"{requests}", f"Last 30 days: {requests_this_month}")
-
-    if constants.MAX_30_DAY_COST >= 0 and (cost_last_30d >= constants.MAX_30_DAY_COST):
-        st.warning(
-            "Free credits for global use have expired. You can [set up a local instance](https://github.com/ddorn/typofixer) with your own API keys."
-            " Or email typofixer@therandom.space and [make a donation](https://paypal.me/diegodorn), though I don't garanty to be fast. Sorry :s"
-        )
-        return False
-    return True
 
 
 def setup_analytics():
@@ -45,12 +21,30 @@ def setup_analytics():
     )
 
 
+class Config(BaseModel):
+    api_base: str | None = None
+    api_key: str | None = None
+
+    @classmethod
+    def load(cls) -> "Config":
+        try:
+            path = Path(constants.CONFIG_PATH)
+            data = yaml.safe_load(path.read_text())
+            return cls.model_validate(data)
+        except FileNotFoundError:
+            return cls()
+
+
 def main():
     st.set_page_config(initial_sidebar_state="expanded", page_title="LLM Typo Fixer")
 
-    st.title("LLM Typo Fixer")
+    config = Config.load()
+    client = openai.OpenAI(
+        api_key=config.api_key,
+        base_url=config.api_base,
+    )
 
-    tracker = usage.tracker()
+    st.title("LLM Typo Fixer")
 
     all_hearts = "❤️-🧡-💛-💚-💙-💜-🖤-🤍-🤎-💖-❤️‍🔥".split("-")
     heart = random.choice(all_hearts)
@@ -70,21 +64,20 @@ def main():
         """
     )
 
-    can_run = show_metrics(tracker)
-
     st.sidebar.write(
         """
         ## Privacy
-        Your data is sent to my server, where it is not stored and is only sent to
-        OpenAI/Anthropic depending on your choice of model. I only log the size of the requests to monitor usage.
+        Your data is sent to my server, where it is not stored and is forwarded to
+        Groq/OpenAI/Anthropic depending on your choice of model. I only log the size of the requests to monitor usage.
         You can also run this locally by following the instructions on the [GitHub repo](
-        https://github.com/ddorn/typofixer). OpenAI and Anthropic may do many things with your data,
-        including training on anonymized versions of it and storing it for 30 days.
+        https://github.com/ddorn/typofixer). Groq claims to not store/train on/sell your data, and OpenAI/Anthropic
+        do the same, but might keep it for 30 days, unless it is classified as violating their TOS, in which case
+        they keep if for up to 2 years.
         """
     )
 
-    with st.sidebar:
-        setup_analytics()
+    # with st.sidebar:
+    #     setup_analytics()  # Doesn't actually work
 
     system_prompts = {
         "Fix typos": """
@@ -121,8 +114,11 @@ def main():
 
         text = st.text_area("Text to fix", max_chars=constants.MAX_CHARS)
 
+        models = client.models.list()
+        model_names = [model.id for model in models.data]
         model = st.selectbox(
-            "Model", constants.MODELS, index=constants.MODELS.index(constants.CHEAP_BUT_GOOD)
+            "Model",
+            model_names,
         )
         assert model is not None  # For the type checker.
 
@@ -133,19 +129,14 @@ def main():
         return {}
 
     if lets_gooo:
-        if not can_run:
-            st.warning("Sorry, there's no more credits!")
-            st.stop()
-        tokens = []  # A hack to get the value out of the function while still streaming easily.
         corrected = st.write_stream(
             ai_stream(
                 system,
                 [dict(role="user", content=text)],
                 model=model,
-                usage_callback=lambda inputs, outputs: tokens.extend([inputs, outputs]),
+                client=client,
             )
         )
-        tracker.log_call(model, text, corrected, tokens[0], tokens[1])
         cache()[text, system] = corrected
         st.rerun()
     else:
