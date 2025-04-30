@@ -1,3 +1,5 @@
 .env
 __pycache__/
 logs.jsonl
+config.yaml
+config-prod.yaml
