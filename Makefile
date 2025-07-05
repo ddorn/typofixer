@@ -2,7 +2,7 @@
 UV := $(shell command -v uv >/dev/null 2>&1 && echo "uv" || echo "/root/.local/bin/uv")
 
 run:
-	$(UV) run streamlit run --server.port 9113 typos_web/main.py
+	$(UV) run --frozen streamlit run --server.port 9113 typofixer/main.py
 
 deploy:
 	git ls-files | rsync -avzP --files-from=- . pine:/srv/typofixer

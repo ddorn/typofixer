@@ -116,6 +116,8 @@ def main():
 
         models = client.models.list()
         model_names = [model.id for model in models.data]
+        # Sort: groq first, then alphabetically
+        model_names.sort(key=lambda x: ("groq" not in x, x))
         model = st.selectbox(
             "Model",
             model_names,
